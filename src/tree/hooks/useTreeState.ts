@@ -1,4 +1,4 @@
-import { useState, MouseEvent } from 'react';
+import { useState, MouseEvent, useLayoutEffect } from 'react';
 
 import { TypeTreeNode, TypeTargetNode, TreeNodeValue, TypeTreeStore } from '../tree-types';
 import useControlled from '../../hooks/useControlled';
@@ -11,11 +11,10 @@ export default function useTreeState(props: TdTreeProps) {
   const [value, onChange] = useControlled(props, 'value', props.onChange);
   const [expanded, onExpand] = useControlled(props, 'expanded', props.onExpand);
   const [actived, onActive] = useControlled(props, 'actived', props.onActive);
-  const [store, setStore] = useState(null);
+  const [store, setStore] = useState<TypeTreeStore>(null);
 
   const [allNodes, setAllNodes] = useState([]); // 全部节点
-
-  const [visibleNodes, setVisibleNodes] = useState([]); // 可见节点
+  const [visibleNodes, setVisibleNodes] = useState([]); // 当前可见节点
 
   const updateState = (store: TypeTreeStore) => {
     setStore(store);
@@ -63,7 +62,6 @@ export default function useTreeState(props: TdTreeProps) {
     return setChecked(node, !node.isChecked(), ctx);
   };
 
-  // 因为是被 useImperativeHandle 依赖的方法，使用 usePersistFn 变成持久化的。或者也可以使用 useCallback
   const setExpanded = usePersistFn(
     (
       node: TypeTreeNode,
@@ -88,6 +86,23 @@ export default function useTreeState(props: TdTreeProps) {
     return setExpanded(node, !node.isExpanded(), ctx);
   };
 
+  const refresh = () => {
+    setAllNodes(store.getNodes());
+  };
+
+  const refreshVisibleNodes = () => {
+    const nodes = store.getNodes();
+    const visibleNodes = nodes.filter((node) => node.visible);
+    setVisibleNodes(visibleNodes);
+  };
+
+  useLayoutEffect(() => {
+    if (!store) return;
+    refresh();
+    refreshVisibleNodes();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, expanded, actived, store]);
   return {
     value,
     setChecked,

@@ -16,7 +16,6 @@ export type TypeTimer = ReturnType<typeof setTimeout>;
 export type TypeTreeNode = TreeNode;
 export type TypeTreeNodeModel = TreeNodeModel;
 export type TypeTargetNode = TreeNodeValue | TypeTreeNode | TypeTreeNodeModel;
-
 export interface TypeMark {
   name: string;
   value: string;

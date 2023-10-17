@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import pick from 'lodash/pick';
 
 import { TreeStore } from '../../_common/js/tree/tree-store';
@@ -20,10 +20,15 @@ export default function useTreeStore(props: TdTreeProps, state: any) {
 
   const { value, actived, expanded, updateState } = state;
 
-  const store: TreeStore = new TreeStore({
-    valueMode,
-    filter: filter as any,
-  });
+  const store = useMemo(
+    () =>
+      new TreeStore({
+        valueMode,
+        filter: filter as any,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const [filterChanged, setFilterChanged] = useState(false);
   const [prevExpanded, setPrevExpanded] = useState(null);
@@ -188,6 +193,7 @@ export default function useTreeStore(props: TdTreeProps, state: any) {
 
   // 配置属性监听
   useEffect(() => {
+    if (!store) return;
     const previousVal = store.getChecked();
     if (propsValue?.join() === previousVal?.join()) return;
     store.replaceChecked(propsValue || []);
